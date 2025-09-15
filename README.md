@@ -1,2 +1,2 @@
-# notion-quote-widget
-notion-quote-widget
+# 노션 임베드로 랜덤 명언 위젯 만들기
+index4.html > 텍스트만 표시 + 배경 삭제

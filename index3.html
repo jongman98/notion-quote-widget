@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>오늘의 명언</title>
+  <style>
+    :root { --radius:20px }
+    html,body{
+      margin:0;
+      background:#111;
+      color:#eaeaea;
+      font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;
+      overflow:hidden;   /* 👈 스크롤 막기 */
+    }
+    .card{
+      max-width:720px;
+      margin:24px auto;
+      padding:28px;
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 8px 32px rgba(0,0,0,.35);
+      backdrop-filter:blur(6px)
+    }
+    .title{font-weight:700;font-size:18px;margin-bottom:12px;text-align:center}
+    .quote{
+      font-size:20px;
+      line-height:1.6;
+      text-align:center;
+      margin:12px 0 4px;
+      word-break:keep-all;    /* 👈 단어 단위 줄바꿈 */
+      white-space:normal;     /* 👈 자동 줄바꿈 */
+    }
+    .author{
+      text-align:center;
+      opacity:.85;
+      margin-bottom:18px;
+      word-break:keep-all;
+      white-space:normal;
+    }
+    .profile{
+      text-align:center;
+      opacity:.6;
+      margin-top:-8px;
+      margin-bottom:18px;
+      word-break:keep-all;
+      white-space:normal;
+    }
+    .tiny{text-align:center;font-size:12px;opacity:.55;margin-top:12px}
+
+    /* === 페이드 애니메이션 === */
+    .fade { transition: opacity .35s ease }
+    .out  { opacity: 0 }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">오늘의 명언</div>
+    <div id="quote" class="quote fade">불러오는 중...</div>
+    <div id="author" class="author fade"></div>
+    <div id="profile" class="profile fade"></div>
+    <div class="tiny">출처: Korean Advice Open API</div>
+  </div>
+
+  <script>
+    const $q = document.getElementById('quote');
+    const $a = document.getElementById('author');
+    const $p = document.getElementById('profile');
+
+    function swapText(el, text){
+      return new Promise(resolve => {
+        el.classList.add('out');   // 페이드 아웃
+        setTimeout(() => {
+          el.textContent = text;   // 텍스트 교체
+          el.classList.remove('out'); // 페이드 인
+          setTimeout(resolve, 350);
+        }, 350);
+      });
+    }
+
+    async function renderAdvice(data){
+      await Promise.all([
+        swapText($q, data.message || '문구를 불러오지 못했어요.'),
+        swapText($a, data.author ? `— ${data.author}` : ''),
+        swapText($p, data.authorProfile || '')
+      ]);
+    }
+
+    async function fetchAdvice(){
+      try{
+        const res = await fetch('https://korean-advice-open-api.vercel.app/api/advice',{cache:'no-store'});
+        const data = await res.json();
+        await renderAdvice(data);
+      }catch(e){
+        await renderAdvice({ message:'네트워크 오류가 발생했어요.', author:'', authorProfile:'' });
+      }
+    }
+
+    // 처음 1회 실행
+    fetchAdvice();
+    // 30초마다 자동 갱신
+    setInterval(fetchAdvice, 30000);
+  </script>
+</body>
+</html>
